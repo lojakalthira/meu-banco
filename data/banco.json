@@ -8,10 +8,10 @@
   },
   "contas": {
     "saldo": 1234.56,
-    "limite": 500.0
+    "limite": 900.0
   },
   "pix": {
-    "chaves": ["kaic@email.com", "11999999999", "CPF: 000.000.000-00"],
+    "chaves": ["kaicsouzalopes@email.com", "75982450263", "CPF: 091-645-305-08"],
     "historico": [
       { "id": "p1", "data": "2026-03-02", "tipo": "recebido", "nome": "Fulano", "valor": 50.0, "descricao": "Pix recebido" },
       { "id": "p2", "data": "2026-03-01", "tipo": "enviado", "nome": "Ciclano", "valor": 25.9, "descricao": "Pix enviado" }
@@ -36,7 +36,7 @@
       "limite": 2500,
       "fatura": 850.15,
       "vencimentoDia": 15,
-      "bloqueado": true
+      "bloqueado": false
     }
   ],
   "metas": [
