@@ -8,13 +8,31 @@
   },
   "contas": {
     "saldo": 1234.56,
-    "limite": 900.0
+    "limite": 900
   },
   "pix": {
-    "chaves": ["kaicsouzalopes@email.com", "75982450263", "CPF: 091-645-305-08"],
+    "chaves": [
+      "kaicsouzalopes@email.com",
+      "75982450263",
+      "CPF: 091-645-305-08"
+    ],
     "historico": [
-      { "id": "p1", "data": "2026-03-02", "tipo": "recebido", "nome": "Fulano", "valor": 50.0, "descricao": "Pix recebido" },
-      { "id": "p2", "data": "2026-03-01", "tipo": "enviado", "nome": "Ciclano", "valor": 25.9, "descricao": "Pix enviado" }
+      {
+        "id": "p1",
+        "data": "2026-03-02",
+        "tipo": "recebido",
+        "nome": "Fulano",
+        "valor": 50,
+        "descricao": "Pix recebido"
+      },
+      {
+        "id": "p2",
+        "data": "2026-03-01",
+        "tipo": "enviado",
+        "nome": "Ciclano",
+        "valor": 25.9,
+        "descricao": "Pix enviado"
+      }
     ]
   },
   "cartoes": [
@@ -40,12 +58,51 @@
     }
   ],
   "metas": [
-    { "id": "m1", "nome": "Meta: PC Gamer", "meta": 6000, "atual": 950 },
-    { "id": "m2", "nome": "Meta: Viagem", "meta": 3000, "atual": 420 }
+    {
+      "id": "m1",
+      "nome": "Meta: PC Gamer",
+      "meta": 6000,
+      "atual": 950
+    },
+    {
+      "id": "m2",
+      "nome": "Meta: Viagem",
+      "meta": 3000,
+      "atual": 420
+    }
   ],
   "extrato": [
-    { "id": "t1", "data": "2026-03-03", "tipo": "saida", "titulo": "Mercado", "categoria": "Alimentação", "valor": 53.9 },
-    { "id": "t2", "data": "2026-03-03", "tipo": "saida", "titulo": "Assinatura", "categoria": "Assinaturas", "valor": 29.9 },
-    { "id": "t3", "data": "2026-03-02", "tipo": "entrada", "titulo": "Pix Recebido", "categoria": "Transferências", "valor": 50.0 }
+    {
+      "id": "t1",
+      "data": "2026-03-03",
+      "tipo": "saida",
+      "titulo": "Mercado",
+      "categoria": "Alimentação",
+      "valor": 53.9
+    },
+    {
+      "id": "t2",
+      "data": "2026-03-03",
+      "tipo": "saida",
+      "titulo": "Assinatura",
+      "categoria": "Assinaturas",
+      "valor": 29.9
+    },
+    {
+      "id": "t3",
+      "data": "2026-03-02",
+      "tipo": "entrada",
+      "titulo": "Pix Recebido",
+      "categoria": "Transferências",
+      "valor": 50
+    },
+    {
+      "id": "t966b6130",
+      "data": "2026-01-21",
+      "tipo": "saida",
+      "titulo": "Rafally",
+      "categoria": "Transferências",
+      "valor": 120
+    }
   ]
 }
