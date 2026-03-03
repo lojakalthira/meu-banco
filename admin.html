@@ -1,315 +1,200 @@
-<script src="./js/app.js"></script>
-<script>
-  const brlToNumber = (txt) => {
-    let t = String(txt||"").trim();
-    if(!t) return 0;
-    t = t.replace(/[R$\s]/g,"");
-    if(t.includes(",")) t = t.replace(/\./g,"").replace(",",".");
-    t = t.replace(/[^0-9.]/g,"");
-    const n = Number(t);
-    return Number.isFinite(n) ? n : 0;
-  };
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div class="container">
 
-  const todayISO = () => new Date().toISOString().slice(0,10);
-  const uid = (prefix) => prefix + Math.random().toString(16).slice(2,10);
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div id="appName">Meu Banco</div>
+      </div>
+      <button id="eyeBtn" class="btnIcon">👁</button>
+    </div>
 
-  const b64DecodeUnicode = (b64) => decodeURIComponent(escape(atob(b64)));
+    <div class="nav">
+      <a class="navlink" data-page="home" href="./index.html">Home</a>
+      <a class="navlink" data-page="extrato" href="./extrato.html">Extrato</a>
+      <a class="navlink" data-page="pix" href="./pix.html">Pix</a>
+      <a class="navlink" data-page="metas" href="./metas.html">Metas</a>
+      <a class="navlink" data-page="cartoes" href="./cartoes.html">Cartões</a>
+      <a class="navlink" data-page="config" href="./config.html">Config</a>
+      <a class="navlink" data-page="admin" href="./admin.html">Admin</a>
+    </div>
 
-  let working = null;
-  let pendingImport = null;
+    <div class="grid2">
 
-  // lê import da URL: admin.html#import=BASE64
-  (function readImport(){
-    const hash = String(location.hash || "");
-    const m = hash.match(/import=([^&]+)/);
-    if(m && m[1]){
-      try{
-        const json = b64DecodeUnicode(decodeURIComponent(m[1]));
-        const payload = JSON.parse(json);
-        pendingImport = payload;
-      }catch{
-        pendingImport = null;
-      }
-    }
-  })();
-
-  App.init("home").then(async ()=>{
-    working = await App.loadDB();
-
-    // garante estruturas
-    working.meta = working.meta || {};
-    working.user = working.user || {};
-    working.contas = working.contas || {};
-    working.extrato = Array.isArray(working.extrato) ? working.extrato : [];
-    working.metas = Array.isArray(working.metas) ? working.metas : [];
-    working.cartoes = Array.isArray(working.cartoes) ? working.cartoes : [];
-    working.pix = working.pix || {};
-    working.pix.chaves = Array.isArray(working.pix.chaves) ? working.pix.chaves : [];
-    working.pix.historico = Array.isArray(working.pix.historico) ? working.pix.historico : [];
-
-    // preenche base
-    document.getElementById("nome").value = working.user.nome ?? "";
-    document.getElementById("app").value = working.meta.appName ?? "";
-    document.getElementById("saldo").value = String(working.contas.saldo ?? "");
-    document.getElementById("limite").value = String(working.contas.limite ?? "");
-
-    if(pendingImport){
-      App.toast("Import", "Recebi um Pix para importar. Desbloqueie o Admin.");
-    }
-
-    // unlock
-    document.getElementById("unlockBtn").addEventListener("click", ()=>{
-      const code = document.getElementById("codeInput").value.trim();
-      const real = String(working.meta.adminCode ?? "");
-      if(code && code === real){
-        document.getElementById("lockBox").style.display = "none";
-        document.getElementById("adminArea").style.display = "block";
-        App.toast("Admin", "Desbloqueado!");
-
-        // aplica import se tiver
-        if(pendingImport && pendingImport.kind === "pix_historico" && pendingImport.item){
-          working.pix.historico.push(pendingImport.item);
-          App.toast("Import", "Pix importado no Admin! Agora gere o banco.json.");
-          pendingImport = null;
-          // limpa hash (opcional)
-          history.replaceState(null, "", location.pathname);
-        }
-
-        renderAllPreviews();
-      }else{
-        App.toast("Admin", "Código errado.");
-      }
-    });
-
-    // ===== EXTRATO =====
-    document.getElementById("addTrans").addEventListener("click", ()=>{
-      const data = document.getElementById("tData").value.trim() || todayISO();
-      const tipo = document.getElementById("tTipo").value;
-      const titulo = document.getElementById("tTitulo").value.trim() || "Transação";
-      const categoria = document.getElementById("tCat").value.trim() || "Outros";
-      const valor = brlToNumber(document.getElementById("tValor").value);
-
-      working.extrato.push({ id: uid("t"), data, tipo, titulo, categoria, valor });
-      App.toast("Extrato", "Adicionado (vai pro JSON gerado).");
-      renderTrans();
-    });
-
-    // ===== METAS =====
-    document.getElementById("addMeta").addEventListener("click", ()=>{
-      const nome = document.getElementById("mNome").value.trim() || "Nova meta";
-      const meta = brlToNumber(document.getElementById("mMeta").value);
-      const atual = brlToNumber(document.getElementById("mAtual").value);
-
-      working.metas.push({ id: uid("m"), nome, meta, atual });
-      App.toast("Metas", "Adicionado (vai pro JSON gerado).");
-      renderMetas();
-    });
-
-    // ===== PIX CHAVES =====
-    document.getElementById("addKey").addEventListener("click", ()=>{
-      const k = document.getElementById("pixKey").value.trim();
-      if(!k){ App.toast("PIX", "Digite uma chave."); return; }
-      working.pix.chaves.push(k);
-      document.getElementById("pixKey").value = "";
-      App.toast("PIX", "Chave adicionada.");
-      renderKeys();
-    });
-
-    // ===== PIX HIST =====
-    document.getElementById("addPixHist").addEventListener("click", ()=>{
-      const data = document.getElementById("pData").value.trim() || todayISO();
-      const tipo = document.getElementById("pTipo").value;
-      const nome = document.getElementById("pNome").value.trim() || "Pessoa";
-      const valor = brlToNumber(document.getElementById("pValor").value);
-      const descricao = document.getElementById("pDesc").value.trim() || "";
-
-      working.pix.historico.push({ id: uid("p"), data, tipo, nome, valor, descricao });
-      App.toast("PIX", "Histórico adicionado.");
-      renderPix();
-    });
-
-    // ===== CARTÕES =====
-    document.getElementById("addCard").addEventListener("click", ()=>{
-      const nome = document.getElementById("cNome").value.trim() || "Cartão";
-      const bandeira = document.getElementById("cBand").value;
-      let final = document.getElementById("cFinal").value.trim();
-      final = final.replace(/[^0-9]/g,"").slice(0,4);
-      if(final.length !== 4){ App.toast("Cartões", "Final precisa ter 4 dígitos."); return; }
-      const vencimentoDia = Math.max(1, Math.min(31, Number(document.getElementById("cVenc").value || 10)));
-      const limite = brlToNumber(document.getElementById("cLimite").value);
-      const fatura = brlToNumber(document.getElementById("cFatura").value);
-      const bloqueado = document.getElementById("cBloq").value === "true";
-
-      working.cartoes.push({
-        id: uid("c"),
-        nome, bandeira, final,
-        limite, fatura,
-        vencimentoDia,
-        bloqueado
-      });
-
-      App.toast("Cartões", "Cartão adicionado.");
-      renderCards();
-    });
-
-    // ===== GERAR =====
-    document.getElementById("gerar").addEventListener("click", ()=>{
-      working.user.nome = document.getElementById("nome").value.trim() || working.user.nome;
-      working.meta.appName = document.getElementById("app").value.trim() || working.meta.appName;
-
-      working.contas.saldo = brlToNumber(document.getElementById("saldo").value);
-      working.contas.limite = brlToNumber(document.getElementById("limite").value);
-
-      working.extrato.sort((a,b)=>String(b.data).localeCompare(String(a.data)));
-      working.pix.historico.sort((a,b)=>String(b.data).localeCompare(String(a.data)));
-
-      const out = JSON.stringify(working, null, 2);
-      document.getElementById("out").value = out;
-      App.toast("JSON", "Gerado! Agora copie e cole no GitHub.");
-    });
-
-    document.getElementById("copiar").addEventListener("click", async ()=>{
-      const txt = document.getElementById("out").value.trim();
-      if(!txt){ App.toast("JSON", "Gere o JSON primeiro."); return; }
-      try{
-        await navigator.clipboard.writeText(txt);
-        App.toast("JSON", "Copiado!");
-      }catch{
-        App.toast("JSON", "Não consegui copiar (permissão do navegador).");
-      }
-    });
-
-    // ===== PREVIEWS =====
-    function renderAllPreviews(){
-      renderTrans();
-      renderMetas();
-      renderKeys();
-      renderPix();
-      renderCards();
-    }
-
-    function renderTrans(){
-      const prevT = document.getElementById("prevTrans");
-      const extr = working.extrato.slice().sort((a,b)=>String(b.data).localeCompare(String(a.data))).slice(0,10);
-
-      prevT.innerHTML = extr.map(t=>{
-        const sign = t.tipo === "entrada" ? "+" : "-";
-        return `
-          <tr>
-            <td>${t.data}</td>
-            <td>${t.titulo}</td>
-            <td>${sign} ${App.brl(t.valor)}</td>
-            <td><button class="btnIcon" data-del-trans="${t.id}">✖</button></td>
-          </tr>
-        `;
-      }).join("") || `<tr><td colspan="4" class="muted">Sem transações</td></tr>`;
-
-      [...prevT.querySelectorAll("[data-del-trans]")].forEach(b=>{
-        b.addEventListener("click", ()=>{
-          const id = b.getAttribute("data-del-trans");
-          working.extrato = working.extrato.filter(x=>x.id !== id);
-          App.toast("Extrato", "Removido (no JSON gerado).");
-          renderTrans();
-        });
-      });
-    }
-
-    function renderMetas(){
-      const prevM = document.getElementById("prevMetas");
-      const metas = working.metas.slice().slice(0,12);
-
-      prevM.innerHTML = metas.map(m=>{
-        return `
-          <tr>
-            <td>${m.nome}</td>
-            <td>${App.brl(m.atual)}</td>
-            <td>${App.brl(m.meta)}</td>
-            <td><button class="btnIcon" data-del-meta="${m.id}">✖</button></td>
-          </tr>
-        `;
-      }).join("") || `<tr><td colspan="4" class="muted">Sem metas</td></tr>`;
-
-      [...prevM.querySelectorAll("[data-del-meta]")].forEach(b=>{
-        b.addEventListener("click", ()=>{
-          const id = b.getAttribute("data-del-meta");
-          working.metas = working.metas.filter(x=>x.id !== id);
-          App.toast("Metas", "Removido (no JSON gerado).");
-          renderMetas();
-        });
-      });
-    }
-
-    function renderKeys(){
-      const wrap = document.getElementById("prevKeys");
-      const keys = working.pix.chaves;
-
-      wrap.innerHTML = keys.map((k, idx)=>`
-        <div class="pill" style="justify-content:space-between;">
-          <span>${k}</span>
-          <button class="btnIcon" data-del-key="${idx}">✖</button>
+      <div class="card">
+        <div class="cardHeader">
+          <div style="font-weight:900;">Editar dados principais</div>
+          <div class="pill"><span id="timeText"></span></div>
         </div>
-      `).join("") || `<div class="muted">Sem chaves</div>`;
+        <div class="cardBody">
 
-      [...wrap.querySelectorAll("[data-del-key]")].forEach(b=>{
-        b.addEventListener("click", ()=>{
-          const idx = Number(b.getAttribute("data-del-key"));
-          working.pix.chaves.splice(idx, 1);
-          App.toast("PIX", "Chave removida.");
-          renderKeys();
-        });
-      });
-    }
+          <div class="grid2">
+            <div class="field">
+              <label>Nome do usuário</label>
+              <input id="nome">
+            </div>
+            <div class="field">
+              <label>Nome do app</label>
+              <input id="app">
+            </div>
+            <div class="field">
+              <label>Saldo</label>
+              <input id="saldo" inputmode="decimal">
+            </div>
+            <div class="field">
+              <label>Limite</label>
+              <input id="limite" inputmode="decimal">
+            </div>
+          </div>
 
-    function renderPix(){
-      const prevP = document.getElementById("prevPix");
-      const hist = working.pix.historico.slice().sort((a,b)=>String(b.data).localeCompare(String(a.data))).slice(0,10);
+          <div class="row" style="margin-top:12px;">
+            <button class="btn primary" id="btnSaveMain">Salvar</button>
+            <span class="muted">Salva no navegador</span>
+          </div>
 
-      prevP.innerHTML = hist.map(p=>{
-        const sign = p.tipo === "recebido" ? "+" : "-";
-        return `
-          <tr>
-            <td>${p.data}</td>
-            <td>${p.nome}</td>
-            <td>${sign} ${App.brl(p.valor)}</td>
-            <td><button class="btnIcon" data-del-pix="${p.id}">✖</button></td>
-          </tr>
-        `;
-      }).join("") || `<tr><td colspan="4" class="muted">Sem histórico</td></tr>`;
+        </div>
+      </div>
 
-      [...prevP.querySelectorAll("[data-del-pix]")].forEach(b=>{
-        b.addEventListener("click", ()=>{
-          const id = b.getAttribute("data-del-pix");
-          working.pix.historico = working.pix.historico.filter(x=>x.id !== id);
-          App.toast("PIX", "Removido (no JSON gerado).");
-          renderPix();
-        });
-      });
-    }
+      <div class="card">
+        <div class="cardHeader">
+          <div style="font-weight:900;">Adicionar coisas rápido</div>
+          <div class="muted">tudo salva</div>
+        </div>
+        <div class="cardBody">
 
-    function renderCards(){
-      const prevC = document.getElementById("prevCards");
-      const cards = working.cartoes.slice().slice(0,12);
+          <div class="card" style="margin-bottom:14px;">
+            <div class="cardBody">
+              <div style="font-weight:900;margin-bottom:10px;">Extrato</div>
+              <div class="grid2">
+                <div class="field">
+                  <label>Data (YYYY-MM-DD)</label>
+                  <input id="tData" placeholder="2026-03-03">
+                </div>
+                <div class="field">
+                  <label>Tipo</label>
+                  <select id="tTipo">
+                    <option value="saida">Saída</option>
+                    <option value="entrada">Entrada</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Título</label>
+                  <input id="tTitulo" placeholder="Mercado">
+                </div>
+                <div class="field">
+                  <label>Categoria</label>
+                  <input id="tCat" placeholder="Alimentação">
+                </div>
+                <div class="field" style="grid-column:1/-1;">
+                  <label>Valor</label>
+                  <input id="tValor" inputmode="decimal" placeholder="53,90">
+                </div>
+              </div>
+              <button class="btn primary" id="btnAddTrans" style="margin-top:10px;">Adicionar</button>
 
-      prevC.innerHTML = cards.map(c=>{
-        const st = c.bloqueado ? "Bloqueado" : "Ativo";
-        return `
-          <tr>
-            <td>${c.nome}</td>
-            <td>•••• ${c.final}</td>
-            <td>${st}</td>
-            <td><button class="btnIcon" data-del-card="${c.id}">✖</button></td>
-          </tr>
-        `;
-      }).join("") || `<tr><td colspan="4" class="muted">Sem cartões</td></tr>`;
+              <table class="table" style="margin-top:12px;">
+                <thead><tr><th>Data</th><th>Título</th><th>Categoria</th><th>Valor</th></tr></thead>
+                <tbody id="prevTrans"></tbody>
+              </table>
+            </div>
+          </div>
 
-      [...prevC.querySelectorAll("[data-del-card]")].forEach(b=>{
-        b.addEventListener("click", ()=>{
-          const id = b.getAttribute("data-del-card");
-          working.cartoes = working.cartoes.filter(x=>x.id !== id);
-          App.toast("Cartões", "Removido (no JSON gerado).");
-          renderCards();
-        });
-      });
-    }
-  });
-</script>
+          <div class="card" style="margin-bottom:14px;">
+            <div class="cardBody">
+              <div style="font-weight:900;margin-bottom:10px;">Metas</div>
+              <div class="grid2">
+                <div class="field">
+                  <label>Nome</label>
+                  <input id="mNome" placeholder="Meta: algo">
+                </div>
+                <div class="field">
+                  <label>Meta</label>
+                  <input id="mMeta" inputmode="decimal" placeholder="3000,00">
+                </div>
+                <div class="field" style="grid-column:1/-1;">
+                  <label>Atual</label>
+                  <input id="mAtual" inputmode="decimal" placeholder="0,00">
+                </div>
+              </div>
+              <button class="btn primary" id="btnAddMeta" style="margin-top:10px;">Adicionar</button>
+
+              <table class="table" style="margin-top:12px;">
+                <thead><tr><th>Nome</th><th>Atual</th><th>Meta</th><th></th></tr></thead>
+                <tbody id="prevMetas"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:14px;">
+            <div class="cardBody">
+              <div style="font-weight:900;margin-bottom:10px;">Chave Pix</div>
+              <div class="row" style="justify-content:flex-start;gap:10px;">
+                <input id="pixKey" placeholder="email/telefone/CPF">
+                <button class="btn primary" id="btnAddKey">Adicionar</button>
+              </div>
+              <div style="margin-top:10px;" id="prevKeys"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="cardBody">
+              <div style="font-weight:900;margin-bottom:10px;">Cartão</div>
+              <div class="grid2">
+                <div class="field">
+                  <label>Nome</label>
+                  <input id="cNome" placeholder="Cartão Virtual">
+                </div>
+                <div class="field">
+                  <label>Bandeira</label>
+                  <select id="cBand">
+                    <option>VISA</option>
+                    <option>MASTERCARD</option>
+                    <option>ELO</option>
+                    <option>AMEX</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Final (4 dígitos)</label>
+                  <input id="cFinal" inputmode="numeric" maxlength="4" placeholder="4832">
+                </div>
+                <div class="field">
+                  <label>Vencimento (dia)</label>
+                  <input id="cVenc" inputmode="numeric" placeholder="10">
+                </div>
+                <div class="field">
+                  <label>Limite</label>
+                  <input id="cLimite" inputmode="decimal" placeholder="1200,00">
+                </div>
+                <div class="field">
+                  <label>Fatura</label>
+                  <input id="cFatura" inputmode="decimal" placeholder="0,00">
+                </div>
+              </div>
+              <button class="btn primary" id="btnAddCard" style="margin-top:10px;">Adicionar</button>
+
+              <table class="table" style="margin-top:12px;">
+                <thead><tr><th>Nome</th><th>Final</th><th>Status</th><th></th></tr></thead>
+                <tbody id="prevCards"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="./js/app.js"></script>
+  <script>App.init("admin");</script>
+</body>
+</html>
