@@ -1,1 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Metas</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div class="container">
 
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div id="appName">Meu Banco</div>
+      </div>
+      <button id="eyeBtn" class="btnIcon">👁</button>
+    </div>
+
+    <div class="nav">
+      <a class="navlink" data-page="home" href="./index.html">Home</a>
+      <a class="navlink" data-page="extrato" href="./extrato.html">Extrato</a>
+      <a class="navlink" data-page="pix" href="./pix.html">Pix</a>
+      <a class="navlink" data-page="metas" href="./metas.html">Metas</a>
+      <a class="navlink" data-page="cartoes" href="./cartoes.html">Cartões</a>
+      <a class="navlink" data-page="config" href="./config.html">Config</a>
+      <a class="navlink" data-page="admin" href="./admin.html">Admin</a>
+    </div>
+
+    <div class="card">
+      <div class="cardHeader">
+        <div style="font-weight:900;">Metas e Cofrinhos</div>
+        <div class="pill"><span id="timeText"></span></div>
+      </div>
+      <div class="cardBody">
+        <div class="muted" style="margin-bottom:12px;">
+          Para alterar valores de verdade, use o <b>Admin</b> e gere o banco.json.
+        </div>
+        <div id="metasWrap"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="./js/app.js"></script>
+  <script>
+    App.init("metas");
+  </script>
+</body>
+</html>
