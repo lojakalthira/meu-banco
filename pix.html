@@ -87,8 +87,10 @@
               <div style="font-weight:900;margin-top:10px;">Pix enviado!</div>
               <div class="muted" id="pixResumo" style="margin-top:8px;text-align:center;"></div>
 
-              <div class="row" style="margin-top:16px;justify-content:center;">
+              <div class="row" style="margin-top:16px;justify-content:center;gap:10px;flex-wrap:wrap;">
                 <button class="btn" id="btnComprovante" type="button">Gerar comprovante (PDF)</button>
+                <button class="btn" id="btnCopiarRegistro" type="button">Copiar registro</button>
+                <button class="btn primary" id="btnAddAdmin" type="button">Adicionar no Admin</button>
               </div>
 
               <div class="row" style="margin-top:12px;">
@@ -105,11 +107,13 @@
       <div class="card">
         <div class="cardHeader">
           <div style="font-weight:900;">Pix (histórico + chaves)</div>
-          <div class="muted">visual</div>
+          <button class="btnIcon" id="btnSimRecebido" title="Simular Pix recebido">⬇️</button>
         </div>
         <div class="cardBody">
 
-          <div class="muted" style="margin-bottom:10px;">Histórico (do banco.json)</div>
+          <div class="muted" style="margin-bottom:10px;">
+            Histórico (carrega do banco.json + adiciona na sessão)
+          </div>
 
           <table class="table">
             <thead>
