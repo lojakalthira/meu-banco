@@ -58,7 +58,6 @@
   function applyPrivacy(){
     const saldoEl = qs("#saldoText");
     const limiteEl = qs("#limiteText");
-    const faturaEls = qsa("[data-money]");
     const eye = qs("#eyeBtn");
 
     if(eye){
@@ -72,15 +71,6 @@
     if(limiteEl){
       limiteEl.textContent = state.hidden ? "R$ ••••" : brl(state.db?.contas?.limite);
     }
-
-    // elementos marcados
-    faturaEls.forEach(el=>{
-      const raw = el.getAttribute("data-money-raw");
-      if(raw == null){
-        el.setAttribute("data-money-raw", el.textContent);
-      }
-      el.textContent = state.hidden ? "R$ ••••" : brl(Number(el.getAttribute("data-money-raw-number") ?? raw));
-    });
   }
 
   function togglePrivacy(){
@@ -113,6 +103,24 @@
     });
   }
 
+  function brlToNumber(txt){
+    let t = String(txt||"").trim();
+    if(!t) return 0;
+    t = t.replace(/[R$\s]/g,"");
+    if(t.includes(",")) t = t.replace(/\./g,"").replace(",",".");
+    t = t.replace(/[^0-9.]/g,"");
+    const n = Number(t);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function todayISO(){
+    return new Date().toISOString().slice(0,10);
+  }
+
+  function txid(){
+    return "KB-" + Math.random().toString(16).slice(2,10).toUpperCase() + "-" + Date.now().toString().slice(-6);
+  }
+
   // ===== PÁGINAS =====
 
   function initHome(){
@@ -131,7 +139,202 @@
     applyPrivacy();
   }
 
+  function initPix(){
+    // render histórico e chaves (do JSON)
+    const chaves = qs("#pixChaves");
+    const hist = qs("#pixHist");
+
+    const keys = state.db?.pix?.chaves ?? [];
+    if(chaves){
+      chaves.innerHTML = keys.map(k=>`
+        <div class="pill" style="justify-content:space-between;margin-bottom:10px;">
+          <span>${escapeHtml(k)}</span>
+          <button class="btnIcon" data-copy="${escapeHtml(k)}">Copiar</button>
+        </div>
+      `).join("") || `<div class="muted">Sem chaves</div>`;
+    }
+
+    const h = (state.db?.pix?.historico ?? []).slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+    if(hist){
+      hist.innerHTML = h.map(p=>{
+        const badge = p.tipo==="recebido"
+          ? `<span class="badgeOk">+ ${brl(p.valor)}</span>`
+          : `<span class="badgeBad">- ${brl(p.valor)}</span>`;
+        return `
+          <tr>
+            <td>${escapeHtml(p.data)}</td>
+            <td>${escapeHtml(p.nome)}</td>
+            <td class="muted">${escapeHtml(p.descricao||"")}</td>
+            <td>${badge}</td>
+          </tr>
+        `;
+      }).join("") || `<tr><td colspan="4" class="muted">Sem histórico.</td></tr>`;
+    }
+
+    qsa("[data-copy]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        try{
+          await navigator.clipboard.writeText(btn.dataset.copy);
+          toast("PIX", "Copiado!");
+        }catch{
+          toast("PIX", "Não consegui copiar (permissão do navegador).");
+        }
+      });
+    });
+
+    // ===== Wizard: step1 -> loading -> success -> comprovante PDF
+    const step1 = qs("#pixStep1");
+    const step2 = qs("#pixStep2");
+    const step3 = qs("#pixStep3");
+
+    const dest = qs("#pixDest");
+    const valor = qs("#pixValor");
+
+    const srcConta = qs("#srcConta");
+    const srcCartao = qs("#srcCartao");
+    const srcHint = qs("#srcHint");
+
+    const btnEnviar = qs("#btnEnviar");
+    const btnVoltar2 = qs("#btnVoltar2");
+    const btnVoltar3 = qs("#btnVoltar3");
+
+    const pixResumo = qs("#pixResumo");
+    const btnComprovante = qs("#btnComprovante");
+
+    let source = "conta"; // "conta" | "cartao"
+    let lastTx = null;
+
+    function showStep(n){
+      if(step1) step1.style.display = (n===1) ? "block" : "none";
+      if(step2) step2.style.display = (n===2) ? "block" : "none";
+      if(step3) step3.style.display = (n===3) ? "block" : "none";
+    }
+
+    function setSource(s){
+      source = s;
+      if(srcConta && srcCartao){
+        srcConta.classList.toggle("active", s==="conta");
+        srcCartao.classList.toggle("active", s==="cartao");
+      }
+      if(srcHint){
+        if(s==="conta"){
+          srcHint.textContent = `Vai sair da Conta (saldo: ${brl(state.db?.contas?.saldo)})`;
+        }else{
+          const c0 = (state.db?.cartoes ?? [])[0];
+          srcHint.textContent = c0
+            ? `Vai sair do Cartão (${c0.nome} •••• ${c0.final})`
+            : `Vai sair do Cartão (nenhum cartão no banco.json)`;
+        }
+      }
+    }
+
+    if(srcConta) srcConta.addEventListener("click", ()=> setSource("conta"));
+    if(srcCartao) srcCartao.addEventListener("click", ()=> setSource("cartao"));
+
+    if(btnVoltar2) btnVoltar2.addEventListener("click", ()=> showStep(1));
+    if(btnVoltar3) btnVoltar3.addEventListener("click", ()=> showStep(1));
+
+    function openFromHash(){
+      // se veio do home com #enviar, abre step1 normalmente
+      // (pode expandir depois pra tabs)
+      showStep(1);
+    }
+    openFromHash();
+    setSource("conta");
+
+    if(btnEnviar){
+      btnEnviar.addEventListener("click", ()=>{
+        const d = (dest?.value || "").trim();
+        const v = brlToNumber(valor?.value || "");
+        if(!d){
+          toast("Pix", "Digite Nome/CPF/CNPJ ou Chave Pix.");
+          return;
+        }
+        if(!(v > 0)){
+          toast("Pix", "Digite um valor válido.");
+          return;
+        }
+
+        // cria transação em memória (não salva)
+        lastTx = {
+          id: txid(),
+          data: todayISO(),
+          hora: nowLabel(),
+          destino: d,
+          valor: v,
+          origem: source === "conta" ? "Conta" : "Cartão",
+          app: state.db?.meta?.appName ?? "Meu Banco"
+        };
+
+        // loading
+        showStep(2);
+
+        // simula envio
+        setTimeout(()=>{
+          showStep(3);
+          if(pixResumo){
+            pixResumo.innerHTML = `
+              <div><b>${escapeHtml(lastTx.origem)}</b> → <b>${escapeHtml(lastTx.destino)}</b></div>
+              <div style="margin-top:6px;">Valor: <b>${brl(lastTx.valor)}</b></div>
+              <div class="muted" style="margin-top:6px;">ID: ${escapeHtml(lastTx.id)} • ${escapeHtml(lastTx.data)} ${escapeHtml(lastTx.hora)}</div>
+            `;
+          }
+        }, 1700);
+      });
+    }
+
+    if(btnComprovante){
+      btnComprovante.addEventListener("click", ()=>{
+        if(!lastTx){
+          toast("Comprovante", "Nenhuma transação para gerar.");
+          return;
+        }
+
+        // Gera PDF com jsPDF (funciona de verdade)
+        try{
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(16);
+          doc.text(`${lastTx.app} • Comprovante Pix`, 14, 18);
+
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(12);
+
+          const lines = [
+            `Status: ENVIADO`,
+            `Data/Hora: ${lastTx.data} ${lastTx.hora}`,
+            `ID: ${lastTx.id}`,
+            `Origem: ${lastTx.origem}`,
+            `Destino: ${lastTx.destino}`,
+            `Valor: ${brl(lastTx.valor)}`
+          ];
+
+          let y = 32;
+          for(const l of lines){
+            doc.text(l, 14, y);
+            y += 8;
+          }
+
+          doc.setFontSize(10);
+          doc.text("Documento gerado pelo seu site (GitHub Pages).", 14, y + 10);
+
+          const filename = `comprovante_pix_${lastTx.id}.pdf`;
+          doc.save(filename);
+
+          toast("Comprovante", "PDF baixado!");
+        }catch(e){
+          toast("Comprovante", "Falha ao gerar PDF (jsPDF).");
+        }
+      });
+    }
+
+    applyPrivacy();
+  }
+
   function initExtrato(){
+    // (mantém sua versão anterior do extrato)
     const list = qs("#extratoList");
     const q = qs("#q");
     const mes = qs("#mes");
@@ -139,7 +342,6 @@
     const cat = qs("#cat");
 
     function monthKey(iso){
-      // "YYYY-MM"
       return String(iso).slice(0,7);
     }
 
@@ -168,14 +370,12 @@
         );
       }
 
-      // totals
       const totalIn = items.filter(i=>i.tipo==="entrada").reduce((a,b)=>a+Number(b.valor||0),0);
       const totalOut = items.filter(i=>i.tipo==="saida").reduce((a,b)=>a+Number(b.valor||0),0);
 
       qs("#totalIn").textContent = brl(totalIn);
       qs("#totalOut").textContent = brl(totalOut);
 
-      // table
       list.innerHTML = items.map(i=>{
         const badge = i.tipo==="entrada" ? `<span class="badgeOk">+ ${brl(i.valor)}</span>` : `<span class="badgeBad">- ${brl(i.valor)}</span>`;
         return `
@@ -188,7 +388,6 @@
         `;
       }).join("") || `<tr><td colspan="4" class="muted">Nada encontrado.</td></tr>`;
 
-      // gráfico por categoria (saídas)
       const out = items.filter(i=>i.tipo==="saida");
       const map = new Map();
       out.forEach(i=>{
@@ -207,40 +406,6 @@
 
     [q, mes, tipo, cat].forEach(el=> el.addEventListener("input", render));
     render();
-  }
-
-  function initPix(){
-    const chaves = qs("#pixChaves");
-    const hist = qs("#pixHist");
-
-    const keys = state.db?.pix?.chaves ?? [];
-    chaves.innerHTML = keys.map(k=>`<div class="pill" style="justify-content:space-between;"><span>${escapeHtml(k)}</span><button class="btnIcon" data-copy="${escapeHtml(k)}">Copiar</button></div>`).join("") || `<div class="muted">Sem chaves</div>`;
-
-    const h = (state.db?.pix?.historico ?? []).slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)));
-    hist.innerHTML = h.map(p=>{
-      const badge = p.tipo==="recebido" ? `<span class="badgeOk">+ ${brl(p.valor)}</span>` : `<span class="badgeBad">- ${brl(p.valor)}</span>`;
-      return `
-        <tr>
-          <td>${escapeHtml(p.data)}</td>
-          <td>${escapeHtml(p.nome)}</td>
-          <td class="muted">${escapeHtml(p.descricao||"")}</td>
-          <td>${badge}</td>
-        </tr>
-      `;
-    }).join("") || `<tr><td colspan="4" class="muted">Sem histórico.</td></tr>`;
-
-    qsa("[data-copy]").forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
-        try{
-          await navigator.clipboard.writeText(btn.dataset.copy);
-          toast("PIX", "Copiado!");
-        }catch{
-          toast("PIX", "Não consegui copiar (permissão do navegador).");
-        }
-      });
-    });
-
-    applyPrivacy();
   }
 
   function initMetas(){
@@ -297,13 +462,11 @@
             <div class="grid2">
               <div>
                 <div class="muted">Limite</div>
-                <div style="font-weight:900;font-size:20px;" data-money>${brl(c.limite)}</div>
-                <span data-money-raw-number="${Number(c.limite)}" style="display:none;"></span>
+                <div style="font-weight:900;font-size:20px;">${brl(c.limite)}</div>
               </div>
               <div>
                 <div class="muted">Fatura atual</div>
-                <div style="font-weight:900;font-size:20px;" data-money>${brl(c.fatura)}</div>
-                <span data-money-raw-number="${Number(c.fatura)}" style="display:none;"></span>
+                <div style="font-weight:900;font-size:20px;">${brl(c.fatura)}</div>
               </div>
             </div>
 
@@ -328,7 +491,6 @@
   function initConfig(){
     qsa("[data-theme]").forEach(btn=>{
       btn.addEventListener("click", ()=>{
-        // tema visual só na hora, sem salvar.
         const t = btn.dataset.theme;
         if(t === "roxo"){
           document.documentElement.style.setProperty("--bg1", "#3a146a");
@@ -349,7 +511,6 @@
     });
   }
 
-  // ===== INIT =====
   async function init(page){
     state.db = await loadDB();
     bindCommon(page);
