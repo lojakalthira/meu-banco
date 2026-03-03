@@ -27,25 +27,44 @@
       <a class="navlink" data-page="admin" href="./admin.html">Admin</a>
     </div>
 
-    <div class="card">
-      <div class="cardHeader">
-        <div style="font-weight:900;">Configurações</div>
-        <div class="pill"><span id="timeText"></span></div>
+    <div class="grid2">
+      <div class="card">
+        <div class="cardHeader">
+          <div style="font-weight:900;">Tema</div>
+          <div class="pill">Atual: <b id="themeNow"></b></div>
+        </div>
+        <div class="cardBody">
+          <div class="row" style="justify-content:flex-start;gap:10px;">
+            <button class="btn" data-theme="roxo">Roxo</button>
+            <button class="btn" data-theme="azul">Azul</button>
+            <button class="btn" data-theme="neon">Neon</button>
+          </div>
+          <div class="muted" style="margin-top:10px;">Tema fica salvo no navegador.</div>
+        </div>
       </div>
 
-      <div class="cardBody">
-        <div class="muted">Temas (não salva — só muda na hora)</div>
-
-        <div class="row" style="margin-top:12px;gap:12px;">
-          <button class="btn primary" data-theme="roxo">Roxo</button>
-          <button class="btn" data-theme="azul">Azul</button>
-          <button class="btn" data-theme="neon">Neon</button>
+      <div class="card">
+        <div class="cardHeader">
+          <div style="font-weight:900;">Backup</div>
+          <div class="muted">exportar/importar</div>
         </div>
+        <div class="cardBody">
+          <div class="row" style="justify-content:flex-start;gap:10px;">
+            <button class="btn primary" id="btnExport">Exportar JSON</button>
+            <button class="btn" id="btnReset">Resetar para padrão</button>
+          </div>
 
-        <hr class="sep"/>
+          <div class="sep"></div>
 
-        <div class="muted">
-          Privacidade: tecla <b>P</b> ou botão 👁 (não salva)
+          <div class="field">
+            <label>Importar backup (.json)</label>
+            <input id="importFile" type="file" accept="application/json">
+          </div>
+          <button class="btn primary" id="btnImport" style="margin-top:10px;">Importar</button>
+
+          <div class="muted" style="margin-top:10px;">
+            Se você importar, o app substitui tudo pelo arquivo.
+          </div>
         </div>
       </div>
     </div>
@@ -53,8 +72,6 @@
   </div>
 
   <script src="./js/app.js"></script>
-  <script>
-    App.init("config");
-  </script>
+  <script>App.init("config");</script>
 </body>
 </html>
