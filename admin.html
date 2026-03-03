@@ -36,9 +36,10 @@
       <div class="cardBody">
 
         <div class="muted" style="margin-bottom:12px;">
-          🔒 Nada é salvo no navegador. Você edita aqui, clica em <b>Gerar banco.json</b>, copia e cola no GitHub.
+          🔒 Nada é salvo no navegador. Você edita aqui, clica em <b>Gerar banco.json</b>, copia e cola no GitHub em <b>data/banco.json</b>.
         </div>
 
+        <!-- LOCK -->
         <div id="lockBox" class="card" style="margin-bottom:14px;">
           <div class="cardBody">
             <div style="font-weight:900;margin-bottom:8px;">Desbloquear Admin</div>
@@ -50,34 +51,47 @@
           </div>
         </div>
 
+        <!-- ADMIN -->
         <div id="adminArea" style="display:none;">
 
-          <div class="grid2">
-            <div>
-              <label class="muted">Nome do usuário</label>
-              <input id="nome" />
-            </div>
-            <div>
-              <label class="muted">Nome do app</label>
-              <input id="app" />
-            </div>
+          <!-- BASE -->
+          <div class="card" style="margin-bottom:14px;">
+            <div class="cardBody">
+              <div style="font-weight:900;margin-bottom:10px;">Dados principais</div>
 
-            <div>
-              <label class="muted">Saldo</label>
-              <input id="saldo" inputmode="decimal" />
-            </div>
-            <div>
-              <label class="muted">Limite</label>
-              <input id="limite" inputmode="decimal" />
+              <div class="grid2">
+                <div>
+                  <label class="muted">Nome do usuário</label>
+                  <input id="nome" />
+                </div>
+                <div>
+                  <label class="muted">Nome do app</label>
+                  <input id="app" />
+                </div>
+                <div>
+                  <label class="muted">Saldo</label>
+                  <input id="saldo" inputmode="decimal" />
+                </div>
+                <div>
+                  <label class="muted">Limite</label>
+                  <input id="limite" inputmode="decimal" />
+                </div>
+              </div>
+
+              <div class="muted" style="margin-top:10px;">
+                Dica: você pode mudar o <b>adminCode</b> direto no <code>data/banco.json</code> no GitHub.
+              </div>
             </div>
           </div>
 
-          <hr class="sep"/>
-
+          <!-- AÇÕES -->
           <div class="grid2">
+
+            <!-- EXTRATO -->
             <div class="card">
               <div class="cardBody">
-                <div style="font-weight:900;margin-bottom:10px;">Adicionar transação (Extrato)</div>
+                <div style="font-weight:900;margin-bottom:10px;">Extrato</div>
+
                 <div class="grid2">
                   <div>
                     <label class="muted">Data (YYYY-MM-DD)</label>
@@ -106,14 +120,24 @@
 
                 <div class="row" style="margin-top:12px;">
                   <button id="addTrans" class="btn primary">Adicionar</button>
-                  <span class="muted">Vai pro JSON gerado</span>
+                  <button id="clearTrans" class="btn">Limpar campos</button>
                 </div>
+
+                <hr class="sep"/>
+
+                <div class="muted" style="margin-bottom:8px;">Últimas transações (removível)</div>
+                <table class="table">
+                  <thead><tr><th>Data</th><th>Título</th><th>Valor</th><th></th></tr></thead>
+                  <tbody id="prevTrans"></tbody>
+                </table>
               </div>
             </div>
 
+            <!-- METAS -->
             <div class="card">
               <div class="cardBody">
-                <div style="font-weight:900;margin-bottom:10px;">Adicionar meta</div>
+                <div style="font-weight:900;margin-bottom:10px;">Metas</div>
+
                 <div class="grid2">
                   <div>
                     <label class="muted">Nome</label>
@@ -128,47 +152,169 @@
                     <input id="mAtual" inputmode="decimal" placeholder="420,00">
                   </div>
                 </div>
+
                 <div class="row" style="margin-top:12px;">
                   <button id="addMeta" class="btn primary">Adicionar</button>
-                  <span class="muted">Vai pro JSON gerado</span>
+                  <button id="clearMeta" class="btn">Limpar campos</button>
                 </div>
+
+                <hr class="sep"/>
+
+                <div class="muted" style="margin-bottom:8px;">Metas (removível)</div>
+                <table class="table">
+                  <thead><tr><th>Nome</th><th>Atual</th><th>Meta</th><th></th></tr></thead>
+                  <tbody id="prevMetas"></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- PIX + CARTÕES -->
+          <div class="grid2" style="margin-top:14px;">
+
+            <!-- PIX -->
+            <div class="card">
+              <div class="cardBody">
+                <div style="font-weight:900;margin-bottom:10px;">PIX</div>
+
+                <div class="card" style="margin-bottom:12px;">
+                  <div class="cardBody">
+                    <div style="font-weight:900;margin-bottom:8px;">Adicionar chave</div>
+                    <div class="row" style="gap:10px;">
+                      <input id="pixKey" placeholder="email / telefone / CPF..." style="flex:1;">
+                      <button id="addKey" class="btn primary">Adicionar</button>
+                    </div>
+                    <div class="muted" style="margin-top:8px;">Chaves (removível)</div>
+                    <div id="prevKeys" style="display:grid;gap:10px;margin-top:10px;"></div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="cardBody">
+                    <div style="font-weight:900;margin-bottom:8px;">Adicionar ao histórico Pix</div>
+
+                    <div class="grid2">
+                      <div>
+                        <label class="muted">Data (YYYY-MM-DD)</label>
+                        <input id="pData" placeholder="2026-03-03">
+                      </div>
+                      <div>
+                        <label class="muted">Tipo</label>
+                        <select id="pTipo">
+                          <option value="recebido">Recebido</option>
+                          <option value="enviado">Enviado</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="muted">Nome</label>
+                        <input id="pNome" placeholder="Fulano">
+                      </div>
+                      <div>
+                        <label class="muted">Valor</label>
+                        <input id="pValor" inputmode="decimal" placeholder="50,00">
+                      </div>
+                      <div style="grid-column:1/-1;">
+                        <label class="muted">Descrição</label>
+                        <input id="pDesc" placeholder="Pix recebido / Pix enviado">
+                      </div>
+                    </div>
+
+                    <div class="row" style="margin-top:12px;">
+                      <button id="addPixHist" class="btn primary">Adicionar</button>
+                      <button id="clearPix" class="btn">Limpar campos</button>
+                    </div>
+
+                    <hr class="sep"/>
+
+                    <div class="muted" style="margin-bottom:8px;">Histórico Pix (removível)</div>
+                    <table class="table">
+                      <thead><tr><th>Data</th><th>Nome</th><th>Valor</th><th></th></tr></thead>
+                      <tbody id="prevPix"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARTÕES -->
+            <div class="card">
+              <div class="cardBody">
+                <div style="font-weight:900;margin-bottom:10px;">Cartões</div>
+
+                <div class="grid2">
+                  <div>
+                    <label class="muted">Nome do cartão</label>
+                    <input id="cNome" placeholder="Cartão Virtual">
+                  </div>
+                  <div>
+                    <label class="muted">Bandeira</label>
+                    <select id="cBand">
+                      <option value="VISA">VISA</option>
+                      <option value="MASTERCARD">MASTERCARD</option>
+                      <option value="ELO">ELO</option>
+                      <option value="AMEX">AMEX</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="muted">Final (4 dígitos)</label>
+                    <input id="cFinal" inputmode="numeric" maxlength="4" placeholder="4832">
+                  </div>
+                  <div>
+                    <label class="muted">Vencimento (dia)</label>
+                    <input id="cVenc" inputmode="numeric" placeholder="10">
+                  </div>
+                  <div>
+                    <label class="muted">Limite</label>
+                    <input id="cLimite" inputmode="decimal" placeholder="1200,00">
+                  </div>
+                  <div>
+                    <label class="muted">Fatura atual</label>
+                    <input id="cFatura" inputmode="decimal" placeholder="230,40">
+                  </div>
+                  <div style="grid-column:1/-1;">
+                    <label class="muted">Status</label>
+                    <select id="cBloq">
+                      <option value="false">Ativo</option>
+                      <option value="true">Bloqueado</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row" style="margin-top:12px;">
+                  <button id="addCard" class="btn primary">Adicionar cartão</button>
+                  <button id="clearCard" class="btn">Limpar campos</button>
+                </div>
+
+                <hr class="sep"/>
+
+                <div class="muted" style="margin-bottom:8px;">Cartões (removível)</div>
+                <table class="table">
+                  <thead><tr><th>Nome</th><th>Final</th><th>Status</th><th></th></tr></thead>
+                  <tbody id="prevCards"></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- GERAR -->
+          <div class="card" style="margin-top:14px;">
+            <div class="cardBody">
+              <div class="row" style="gap:10px;">
+                <button id="gerar" class="btn primary">Gerar banco.json</button>
+                <button id="copiar" class="btn">Copiar JSON</button>
+                <span class="muted">Cole em <b>data/banco.json</b> no GitHub e dê commit</span>
+              </div>
+
+              <div style="margin-top:12px;">
+                <textarea id="out" rows="16" placeholder="Seu banco.json vai aparecer aqui"></textarea>
               </div>
             </div>
           </div>
 
-          <hr class="sep"/>
+        </div><!-- /adminArea -->
 
-          <div class="row" style="gap:10px;">
-            <button id="gerar" class="btn primary">Gerar banco.json</button>
-            <button id="copiar" class="btn">Copiar JSON</button>
-            <span class="muted">Depois cole em <b>data/banco.json</b> no GitHub e dê commit</span>
-          </div>
-
-          <div style="margin-top:12px;">
-            <textarea id="out" rows="16" placeholder="Seu banco.json vai aparecer aqui"></textarea>
-          </div>
-
-          <div style="margin-top:12px;">
-            <div class="muted" style="margin-bottom:8px;">Prévia rápida (itens adicionados nesta sessão)</div>
-            <div class="grid2">
-              <div class="card"><div class="cardBody">
-                <div style="font-weight:900;margin-bottom:6px;">Últimas transações</div>
-                <table class="table">
-                  <thead><tr><th>Data</th><th>Título</th><th>Valor</th></tr></thead>
-                  <tbody id="prevTrans"></tbody>
-                </table>
-              </div></div>
-              <div class="card"><div class="cardBody">
-                <div style="font-weight:900;margin-bottom:6px;">Metas</div>
-                <table class="table">
-                  <thead><tr><th>Nome</th><th>Atual</th><th>Meta</th></tr></thead>
-                  <tbody id="prevMetas"></tbody>
-                </table>
-              </div></div>
-            </div>
-          </div>
-
-        </div>
       </div>
     </div>
 
@@ -186,96 +332,168 @@
       return Number.isFinite(n) ? n : 0;
     };
 
+    const todayISO = () => new Date().toISOString().slice(0,10);
+
+    const uid = (prefix) => prefix + Math.random().toString(16).slice(2,10);
+
     let working = null;
 
+    // Inicia app só para topbar/tempo/olhinho (não salva nada)
     App.init("home").then(async ()=>{
-      // carrega o JSON de verdade de novo aqui (garantia)
       working = await App.loadDB();
 
-      // preenche campos base
-      document.getElementById("nome").value = working.user?.nome ?? "";
-      document.getElementById("app").value = working.meta?.appName ?? "";
-      document.getElementById("saldo").value = String(working.contas?.saldo ?? "");
-      document.getElementById("limite").value = String(working.contas?.limite ?? "");
+      // garante estruturas
+      working.meta = working.meta || {};
+      working.user = working.user || {};
+      working.contas = working.contas || {};
+      working.extrato = Array.isArray(working.extrato) ? working.extrato : [];
+      working.metas = Array.isArray(working.metas) ? working.metas : [];
+      working.cartoes = Array.isArray(working.cartoes) ? working.cartoes : [];
+      working.pix = working.pix || {};
+      working.pix.chaves = Array.isArray(working.pix.chaves) ? working.pix.chaves : [];
+      working.pix.historico = Array.isArray(working.pix.historico) ? working.pix.historico : [];
 
-      // lock
+      // fill base
+      document.getElementById("nome").value = working.user.nome ?? "";
+      document.getElementById("app").value = working.meta.appName ?? "";
+      document.getElementById("saldo").value = String(working.contas.saldo ?? "");
+      document.getElementById("limite").value = String(working.contas.limite ?? "");
+
+      // unlock
       document.getElementById("unlockBtn").addEventListener("click", ()=>{
         const code = document.getElementById("codeInput").value.trim();
-        const real = String(working.meta?.adminCode ?? "");
+        const real = String(working.meta.adminCode ?? "");
         if(code && code === real){
           document.getElementById("lockBox").style.display = "none";
           document.getElementById("adminArea").style.display = "block";
           App.toast("Admin", "Desbloqueado!");
-          renderPrev();
+          renderAllPreviews();
         }else{
           App.toast("Admin", "Código errado.");
         }
       });
 
-      // add trans
+      // ===== EXTRATO =====
       document.getElementById("addTrans").addEventListener("click", ()=>{
-        const data = document.getElementById("tData").value.trim() || new Date().toISOString().slice(0,10);
+        const data = document.getElementById("tData").value.trim() || todayISO();
         const tipo = document.getElementById("tTipo").value;
         const titulo = document.getElementById("tTitulo").value.trim() || "Transação";
         const categoria = document.getElementById("tCat").value.trim() || "Outros";
         const valor = brlToNumber(document.getElementById("tValor").value);
 
-        working.extrato = working.extrato || [];
-        working.extrato.push({
-          id: "t" + Math.random().toString(16).slice(2,10),
-          data, tipo, titulo, categoria, valor
-        });
-
-        App.toast("Extrato", "Transação adicionada (vai pro JSON gerado).");
-        renderPrev();
+        working.extrato.push({ id: uid("t"), data, tipo, titulo, categoria, valor });
+        App.toast("Extrato", "Adicionado (vai pro JSON gerado).");
+        renderTrans();
       });
 
-      // add meta
+      document.getElementById("clearTrans").addEventListener("click", ()=>{
+        document.getElementById("tData").value = "";
+        document.getElementById("tTitulo").value = "";
+        document.getElementById("tCat").value = "";
+        document.getElementById("tValor").value = "";
+      });
+
+      // ===== METAS =====
       document.getElementById("addMeta").addEventListener("click", ()=>{
         const nome = document.getElementById("mNome").value.trim() || "Nova meta";
         const meta = brlToNumber(document.getElementById("mMeta").value);
         const atual = brlToNumber(document.getElementById("mAtual").value);
 
-        working.metas = working.metas || [];
-        working.metas.push({
-          id: "m" + Math.random().toString(16).slice(2,10),
-          nome, meta, atual
-        });
-
-        App.toast("Metas", "Meta adicionada (vai pro JSON gerado).");
-        renderPrev();
+        working.metas.push({ id: uid("m"), nome, meta, atual });
+        App.toast("Metas", "Adicionado (vai pro JSON gerado).");
+        renderMetas();
       });
 
-      // gerar
-      document.getElementById("gerar").addEventListener("click", ()=>{
-        // aplica alterações base
-        working.user = working.user || {};
-        working.meta = working.meta || {};
-        working.contas = working.contas || {};
+      document.getElementById("clearMeta").addEventListener("click", ()=>{
+        document.getElementById("mNome").value = "";
+        document.getElementById("mMeta").value = "";
+        document.getElementById("mAtual").value = "";
+      });
 
+      // ===== PIX CHAVES =====
+      document.getElementById("addKey").addEventListener("click", ()=>{
+        const k = document.getElementById("pixKey").value.trim();
+        if(!k){ App.toast("PIX", "Digite uma chave."); return; }
+        working.pix.chaves.push(k);
+        document.getElementById("pixKey").value = "";
+        App.toast("PIX", "Chave adicionada.");
+        renderKeys();
+      });
+
+      // ===== PIX HIST =====
+      document.getElementById("addPixHist").addEventListener("click", ()=>{
+        const data = document.getElementById("pData").value.trim() || todayISO();
+        const tipo = document.getElementById("pTipo").value;
+        const nome = document.getElementById("pNome").value.trim() || "Pessoa";
+        const valor = brlToNumber(document.getElementById("pValor").value);
+        const descricao = document.getElementById("pDesc").value.trim() || "";
+
+        working.pix.historico.push({ id: uid("p"), data, tipo, nome, valor, descricao });
+        App.toast("PIX", "Histórico adicionado.");
+        renderPix();
+      });
+
+      document.getElementById("clearPix").addEventListener("click", ()=>{
+        document.getElementById("pData").value = "";
+        document.getElementById("pNome").value = "";
+        document.getElementById("pValor").value = "";
+        document.getElementById("pDesc").value = "";
+      });
+
+      // ===== CARTÕES =====
+      document.getElementById("addCard").addEventListener("click", ()=>{
+        const nome = document.getElementById("cNome").value.trim() || "Cartão";
+        const bandeira = document.getElementById("cBand").value;
+        let final = document.getElementById("cFinal").value.trim();
+        final = final.replace(/[^0-9]/g,"").slice(0,4);
+        if(final.length !== 4){ App.toast("Cartões", "Final precisa ter 4 dígitos."); return; }
+        const vencimentoDia = Math.max(1, Math.min(31, Number(document.getElementById("cVenc").value || 10)));
+        const limite = brlToNumber(document.getElementById("cLimite").value);
+        const fatura = brlToNumber(document.getElementById("cFatura").value);
+        const bloqueado = document.getElementById("cBloq").value === "true";
+
+        working.cartoes.push({
+          id: uid("c"),
+          nome, bandeira, final,
+          limite, fatura,
+          vencimentoDia,
+          bloqueado
+        });
+
+        App.toast("Cartões", "Cartão adicionado.");
+        renderCards();
+      });
+
+      document.getElementById("clearCard").addEventListener("click", ()=>{
+        document.getElementById("cNome").value = "";
+        document.getElementById("cFinal").value = "";
+        document.getElementById("cVenc").value = "";
+        document.getElementById("cLimite").value = "";
+        document.getElementById("cFatura").value = "";
+        document.getElementById("cBloq").value = "false";
+      });
+
+      // ===== GERAR =====
+      document.getElementById("gerar").addEventListener("click", ()=>{
+        // base
         working.user.nome = document.getElementById("nome").value.trim() || working.user.nome;
         working.meta.appName = document.getElementById("app").value.trim() || working.meta.appName;
 
         working.contas.saldo = brlToNumber(document.getElementById("saldo").value);
         working.contas.limite = brlToNumber(document.getElementById("limite").value);
 
-        // ordena extrato por data desc
-        if(Array.isArray(working.extrato)){
-          working.extrato.sort((a,b)=>String(b.data).localeCompare(String(a.data)));
-        }
+        // ordenações
+        working.extrato.sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+        working.pix.historico.sort((a,b)=>String(b.data).localeCompare(String(a.data)));
 
         const out = JSON.stringify(working, null, 2);
         document.getElementById("out").value = out;
         App.toast("JSON", "Gerado! Agora copie e cole no GitHub.");
       });
 
-      // copiar
       document.getElementById("copiar").addEventListener("click", async ()=>{
         const txt = document.getElementById("out").value.trim();
-        if(!txt){
-          App.toast("JSON", "Gere o JSON primeiro.");
-          return;
-        }
+        if(!txt){ App.toast("JSON", "Gere o JSON primeiro."); return; }
         try{
           await navigator.clipboard.writeText(txt);
           App.toast("JSON", "Copiado!");
@@ -284,20 +502,137 @@
         }
       });
 
-      function renderPrev(){
-        const prevT = document.getElementById("prevTrans");
-        const prevM = document.getElementById("prevMetas");
+      // ===== RENDER PREVIEW =====
+      function renderAllPreviews(){
+        renderTrans();
+        renderMetas();
+        renderKeys();
+        renderPix();
+        renderCards();
+      }
 
-        const extr = (working.extrato||[]).slice().sort((a,b)=>String(b.data).localeCompare(String(a.data))).slice(0,6);
+      function renderTrans(){
+        const prevT = document.getElementById("prevTrans");
+        const extr = working.extrato.slice().sort((a,b)=>String(b.data).localeCompare(String(a.data))).slice(0,10);
+
         prevT.innerHTML = extr.map(t=>{
           const sign = t.tipo === "entrada" ? "+" : "-";
-          return `<tr><td>${t.data}</td><td>${t.titulo}</td><td>${sign} ${App.brl(t.valor)}</td></tr>`;
-        }).join("") || `<tr><td colspan="3" class="muted">Sem transações</td></tr>`;
+          return `
+            <tr>
+              <td>${t.data}</td>
+              <td>${t.titulo}</td>
+              <td>${sign} ${App.brl(t.valor)}</td>
+              <td><button class="btnIcon" data-del-trans="${t.id}" title="Remover">✖</button></td>
+            </tr>
+          `;
+        }).join("") || `<tr><td colspan="4" class="muted">Sem transações</td></tr>`;
 
-        const metas = (working.metas||[]).slice().slice(0,8);
+        [...prevT.querySelectorAll("[data-del-trans]")].forEach(b=>{
+          b.addEventListener("click", ()=>{
+            const id = b.getAttribute("data-del-trans");
+            working.extrato = working.extrato.filter(x=>x.id !== id);
+            App.toast("Extrato", "Removido (no JSON gerado).");
+            renderTrans();
+          });
+        });
+      }
+
+      function renderMetas(){
+        const prevM = document.getElementById("prevMetas");
+        const metas = working.metas.slice().slice(0,12);
+
         prevM.innerHTML = metas.map(m=>{
-          return `<tr><td>${m.nome}</td><td>${App.brl(m.atual)}</td><td>${App.brl(m.meta)}</td></tr>`;
-        }).join("") || `<tr><td colspan="3" class="muted">Sem metas</td></tr>`;
+          return `
+            <tr>
+              <td>${m.nome}</td>
+              <td>${App.brl(m.atual)}</td>
+              <td>${App.brl(m.meta)}</td>
+              <td><button class="btnIcon" data-del-meta="${m.id}" title="Remover">✖</button></td>
+            </tr>
+          `;
+        }).join("") || `<tr><td colspan="4" class="muted">Sem metas</td></tr>`;
+
+        [...prevM.querySelectorAll("[data-del-meta]")].forEach(b=>{
+          b.addEventListener("click", ()=>{
+            const id = b.getAttribute("data-del-meta");
+            working.metas = working.metas.filter(x=>x.id !== id);
+            App.toast("Metas", "Removido (no JSON gerado).");
+            renderMetas();
+          });
+        });
+      }
+
+      function renderKeys(){
+        const wrap = document.getElementById("prevKeys");
+        const keys = working.pix.chaves;
+
+        wrap.innerHTML = keys.map((k, idx)=>`
+          <div class="pill" style="justify-content:space-between;">
+            <span>${k}</span>
+            <button class="btnIcon" data-del-key="${idx}" title="Remover">✖</button>
+          </div>
+        `).join("") || `<div class="muted">Sem chaves</div>`;
+
+        [...wrap.querySelectorAll("[data-del-key]")].forEach(b=>{
+          b.addEventListener("click", ()=>{
+            const idx = Number(b.getAttribute("data-del-key"));
+            working.pix.chaves.splice(idx, 1);
+            App.toast("PIX", "Chave removida.");
+            renderKeys();
+          });
+        });
+      }
+
+      function renderPix(){
+        const prevP = document.getElementById("prevPix");
+        const hist = working.pix.historico.slice().sort((a,b)=>String(b.data).localeCompare(String(a.data))).slice(0,10);
+
+        prevP.innerHTML = hist.map(p=>{
+          const sign = p.tipo === "recebido" ? "+" : "-";
+          return `
+            <tr>
+              <td>${p.data}</td>
+              <td>${p.nome}</td>
+              <td>${sign} ${App.brl(p.valor)}</td>
+              <td><button class="btnIcon" data-del-pix="${p.id}" title="Remover">✖</button></td>
+            </tr>
+          `;
+        }).join("") || `<tr><td colspan="4" class="muted">Sem histórico</td></tr>`;
+
+        [...prevP.querySelectorAll("[data-del-pix]")].forEach(b=>{
+          b.addEventListener("click", ()=>{
+            const id = b.getAttribute("data-del-pix");
+            working.pix.historico = working.pix.historico.filter(x=>x.id !== id);
+            App.toast("PIX", "Removido (no JSON gerado).");
+            renderPix();
+          });
+        });
+      }
+
+      function renderCards(){
+        const prevC = document.getElementById("prevCards");
+        const cards = working.cartoes.slice().slice(0,12);
+
+        prevC.innerHTML = cards.map(c=>{
+          const st = c.bloqueado ? "Bloqueado" : "Ativo";
+          return `
+            <tr>
+              <td>${c.nome}</td>
+              <td>•••• ${c.final}</td>
+              <td>${st}</td>
+              <td><button class="btnIcon" data-del-card="${c.id}" title="Remover">✖</button></td>
+            </tr>
+          `;
+        }).join("") || `<tr><td colspan="4" class="muted">Sem cartões</td></tr>`;
+
+        [...prevC.querySelectorAll("[data-del-card]")].forEach(b=>{
+          b.addEventListener("click", ()=>{
+            const id = b.getAttribute("data-del-card");
+            working.cartoes = working.cartoes.filter(x=>x.id !== id);
+            App.toast("Cartões", "Removido (no JSON gerado).");
+            renderCards();
+          });
+        });
       }
     });
   </script>
