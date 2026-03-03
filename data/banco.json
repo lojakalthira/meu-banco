@@ -1,108 +1,74 @@
 {
   "meta": {
     "appName": "KBank",
-    "adminCode": "919191"
+    "version": 1,
+    "theme": "roxo"
   },
   "user": {
     "nome": "Kaic Carvalho Souza"
   },
   "contas": {
     "saldo": 1234.56,
-    "limite": 900
+    "limite": 900.0
   },
   "pix": {
     "chaves": [
-      "kaicsouzalopes@email.com",
-      "75982450263",
-      "CPF: 091-645-305-08"
+      "pretinhonine@gamil.com",
+      "+55 (75) 9 8724-6068"
     ],
     "historico": [
       {
-        "id": "p1",
-        "data": "2026-03-02",
-        "tipo": "recebido",
-        "nome": "Fulano",
-        "valor": 50,
-        "descricao": "Pix recebido"
-      },
-      {
-        "id": "p2",
+        "id": "KB-INIT-000001",
         "data": "2026-03-01",
-        "tipo": "enviado",
-        "nome": "Ciclano",
-        "valor": 25.9,
-        "descricao": "Pix enviado"
+        "tipo": "recebido",
+        "nome": "Trabalho",
+        "valor": 250.0,
+        "descricao": "Pix recebido"
       }
     ]
   },
-  "cartoes": [
-    {
-      "id": "virtual",
-      "nome": "Cartão Virtual",
-      "bandeira": "VISA",
-      "final": "4832",
-      "limite": 1200,
-      "fatura": 230.4,
-      "vencimentoDia": 10,
-      "bloqueado": false
-    },
-    {
-      "id": "fisico",
-      "nome": "Cartão Físico",
-      "bandeira": "MASTERCARD",
-      "final": "1290",
-      "limite": 2500,
-      "fatura": 850.15,
-      "vencimentoDia": 15,
-      "bloqueado": false
-    }
-  ],
-  "metas": [
-    {
-      "id": "m1",
-      "nome": "Meta: PC Gamer",
-      "meta": 6000,
-      "atual": 950
-    },
-    {
-      "id": "m2",
-      "nome": "Meta: Viagem",
-      "meta": 3000,
-      "atual": 420
-    }
-  ],
   "extrato": [
     {
-      "id": "t1",
-      "data": "2026-03-03",
+      "id": "T-INIT-0001",
+      "data": "2026-03-01",
+      "tipo": "entrada",
+      "titulo": "Pix recebido",
+      "categoria": "Pix",
+      "valor": 250.0
+    },
+    {
+      "id": "T-INIT-0002",
+      "data": "2026-03-02",
       "tipo": "saida",
       "titulo": "Mercado",
       "categoria": "Alimentação",
       "valor": 53.9
+    }
+  ],
+  "metas": [
+    {
+      "id": "M-1",
+      "nome": "Meta: PC gamer",
+      "meta": 6000.0,
+      "atual": 420.0
     },
     {
-      "id": "t2",
-      "data": "2026-03-03",
-      "tipo": "saida",
-      "titulo": "Assinatura",
-      "categoria": "Assinaturas",
-      "valor": 29.9
-    },
+      "id": "M-2",
+      "nome": "Meta: Viagem",
+      "meta": 3000.0,
+      "atual": 150.0
+    }
+  ],
+  "cartoes": [
     {
-      "id": "t3",
-      "data": "2026-03-02",
-      "tipo": "entrada",
-      "titulo": "Pix Recebido",
-      "categoria": "Transferências",
-      "valor": 50
-    },
-    {
-      "id": "t966b6130",
-      "data": "2026-01-21",
-      "tipo": "saida",
-      "titulo": "Rafally",
-      "categoria": "Transferências",
-      "valor": 120
+      "id": "C-1",
+      "nome": "Cartão Virtual",
+      "bandeira": "VISA",
+      "final": "4832",
+      "limite": 1200.0,
+      "fatura": 230.4,
+      "vencimentoDia": 10,
+      "bloqueado": false
     }
   ]
 }
