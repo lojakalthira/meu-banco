@@ -1,1 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div class="container">
 
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div id="appName">Meu Banco</div>
+      </div>
+      <button id="eyeBtn" class="btnIcon">👁</button>
+    </div>
+
+    <div class="nav">
+      <a class="navlink" data-page="home" href="./index.html">Home</a>
+      <a class="navlink" data-page="extrato" href="./extrato.html">Extrato</a>
+      <a class="navlink" data-page="pix" href="./pix.html">Pix</a>
+      <a class="navlink" data-page="metas" href="./metas.html">Metas</a>
+      <a class="navlink" data-page="cartoes" href="./cartoes.html">Cartões</a>
+      <a class="navlink" data-page="config" href="./config.html">Config</a>
+      <a class="navlink" data-page="admin" href="./admin.html">Admin</a>
+    </div>
+
+    <div class="card">
+      <div class="cardHeader">
+        <div style="font-weight:900;">Admin (gera banco.json)</div>
+        <div class="pill"><span id="timeText"></span></div>
+      </div>
+
+      <div class="cardBody">
+
+        <div class="muted" style="margin-bottom:12px;">
+          🔒 Nada é salvo no navegador. Você edita aqui, clica em <b>Gerar banco.json</b>, copia e cola no GitHub.
+        </div>
+
+        <div id="lockBox" class="card" style="margin-bottom:14px;">
+          <div class="cardBody">
+            <div style="font-weight:900;margin-bottom:8px;">Desbloquear Admin</div>
+            <div class="muted" style="margin-bottom:10px;">Digite o código do JSON (<code>meta.adminCode</code>)</div>
+            <div class="row" style="gap:10px;">
+              <input id="codeInput" placeholder="ex: 919191" style="flex:1;">
+              <button id="unlockBtn" class="btn primary">Desbloquear</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="adminArea" style="display:none;">
+
+          <div class="grid2">
+            <div>
+              <label class="muted">Nome do usuário</label>
+              <input id="nome" />
+            </div>
+            <div>
+              <label class="muted">Nome do app</label>
+              <input id="app" />
+            </div>
+
+            <div>
+              <label class="muted">Saldo</label>
+              <input id="saldo" inputmode="decimal" />
+            </div>
+            <div>
+              <label class="muted">Limite</label>
+              <input id="limite" inputmode="decimal" />
+            </div>
+          </div>
+
+          <hr class="sep"/>
+
+          <div class="grid2">
+            <div class="card">
+              <div class="cardBody">
+                <div style="font-weight:900;margin-bottom:10px;">Adicionar transação (Extrato)</div>
+                <div class="grid2">
+                  <div>
+                    <label class="muted">Data (YYYY-MM-DD)</label>
+                    <input id="tData" placeholder="2026-03-03">
+                  </div>
+                  <div>
+                    <label class="muted">Tipo</label>
+                    <select id="tTipo">
+                      <option value="saida">Saída</option>
+                      <option value="entrada">Entrada</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="muted">Título</label>
+                    <input id="tTitulo" placeholder="Mercado">
+                  </div>
+                  <div>
+                    <label class="muted">Categoria</label>
+                    <input id="tCat" placeholder="Alimentação">
+                  </div>
+                  <div style="grid-column:1/-1;">
+                    <label class="muted">Valor</label>
+                    <input id="tValor" inputmode="decimal" placeholder="53,90">
+                  </div>
+                </div>
+
+                <div class="row" style="margin-top:12px;">
+                  <button id="addTrans" class="btn primary">Adicionar</button>
+                  <span class="muted">Vai pro JSON gerado</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="cardBody">
+                <div style="font-weight:900;margin-bottom:10px;">Adicionar meta</div>
+                <div class="grid2">
+                  <div>
+                    <label class="muted">Nome</label>
+                    <input id="mNome" placeholder="Meta: Viagem">
+                  </div>
+                  <div>
+                    <label class="muted">Meta (total)</label>
+                    <input id="mMeta" inputmode="decimal" placeholder="3000,00">
+                  </div>
+                  <div style="grid-column:1/-1;">
+                    <label class="muted">Atual</label>
+                    <input id="mAtual" inputmode="decimal" placeholder="420,00">
+                  </div>
+                </div>
+                <div class="row" style="margin-top:12px;">
+                  <button id="addMeta" class="btn primary">Adicionar</button>
+                  <span class="muted">Vai pro JSON gerado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="sep"/>
+
+          <div class="row" style="gap:10px;">
+            <button id="gerar" class="btn primary">Gerar banco.json</button>
+            <button id="copiar" class="btn">Copiar JSON</button>
+            <span class="muted">Depois cole em <b>data/banco.json</b> no GitHub e dê commit</span>
+          </div>
+
+          <div style="margin-top:12px;">
+            <textarea id="out" rows="16" placeholder="Seu banco.json vai aparecer aqui"></textarea>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="muted" style="margin-bottom:8px;">Prévia rápida (itens adicionados nesta sessão)</div>
+            <div class="grid2">
+              <div class="card"><div class="cardBody">
+                <div style="font-weight:900;margin-bottom:6px;">Últimas transações</div>
+                <table class="table">
+                  <thead><tr><th>Data</th><th>Título</th><th>Valor</th></tr></thead>
+                  <tbody id="prevTrans"></tbody>
+                </table>
+              </div></div>
+              <div class="card"><div class="cardBody">
+                <div style="font-weight:900;margin-bottom:6px;">Metas</div>
+                <table class="table">
+                  <thead><tr><th>Nome</th><th>Atual</th><th>Meta</th></tr></thead>
+                  <tbody id="prevMetas"></tbody>
+                </table>
+              </div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="./js/app.js"></script>
+  <script>
+    const brlToNumber = (txt) => {
+      let t = String(txt||"").trim();
+      if(!t) return 0;
+      t = t.replace(/[R$\s]/g,"");
+      if(t.includes(",")) t = t.replace(/\./g,"").replace(",",".");
+      t = t.replace(/[^0-9.]/g,"");
+      const n = Number(t);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    let working = null;
+
+    App.init("home").then(async ()=>{
+      // carrega o JSON de verdade de novo aqui (garantia)
+      working = await App.loadDB();
+
+      // preenche campos base
+      document.getElementById("nome").value = working.user?.nome ?? "";
+      document.getElementById("app").value = working.meta?.appName ?? "";
+      document.getElementById("saldo").value = String(working.contas?.saldo ?? "");
+      document.getElementById("limite").value = String(working.contas?.limite ?? "");
+
+      // lock
+      document.getElementById("unlockBtn").addEventListener("click", ()=>{
+        const code = document.getElementById("codeInput").value.trim();
+        const real = String(working.meta?.adminCode ?? "");
+        if(code && code === real){
+          document.getElementById("lockBox").style.display = "none";
+          document.getElementById("adminArea").style.display = "block";
+          App.toast("Admin", "Desbloqueado!");
+          renderPrev();
+        }else{
+          App.toast("Admin", "Código errado.");
+        }
+      });
+
+      // add trans
+      document.getElementById("addTrans").addEventListener("click", ()=>{
+        const data = document.getElementById("tData").value.trim() || new Date().toISOString().slice(0,10);
+        const tipo = document.getElementById("tTipo").value;
+        const titulo = document.getElementById("tTitulo").value.trim() || "Transação";
+        const categoria = document.getElementById("tCat").value.trim() || "Outros";
+        const valor = brlToNumber(document.getElementById("tValor").value);
+
+        working.extrato = working.extrato || [];
+        working.extrato.push({
+          id: "t" + Math.random().toString(16).slice(2,10),
+          data, tipo, titulo, categoria, valor
+        });
+
+        App.toast("Extrato", "Transação adicionada (vai pro JSON gerado).");
+        renderPrev();
+      });
+
+      // add meta
+      document.getElementById("addMeta").addEventListener("click", ()=>{
+        const nome = document.getElementById("mNome").value.trim() || "Nova meta";
+        const meta = brlToNumber(document.getElementById("mMeta").value);
+        const atual = brlToNumber(document.getElementById("mAtual").value);
+
+        working.metas = working.metas || [];
+        working.metas.push({
+          id: "m" + Math.random().toString(16).slice(2,10),
+          nome, meta, atual
+        });
+
+        App.toast("Metas", "Meta adicionada (vai pro JSON gerado).");
+        renderPrev();
+      });
+
+      // gerar
+      document.getElementById("gerar").addEventListener("click", ()=>{
+        // aplica alterações base
+        working.user = working.user || {};
+        working.meta = working.meta || {};
+        working.contas = working.contas || {};
+
+        working.user.nome = document.getElementById("nome").value.trim() || working.user.nome;
+        working.meta.appName = document.getElementById("app").value.trim() || working.meta.appName;
+
+        working.contas.saldo = brlToNumber(document.getElementById("saldo").value);
+        working.contas.limite = brlToNumber(document.getElementById("limite").value);
+
+        // ordena extrato por data desc
+        if(Array.isArray(working.extrato)){
+          working.extrato.sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+        }
+
+        const out = JSON.stringify(working, null, 2);
+        document.getElementById("out").value = out;
+        App.toast("JSON", "Gerado! Agora copie e cole no GitHub.");
+      });
+
+      // copiar
+      document.getElementById("copiar").addEventListener("click", async ()=>{
+        const txt = document.getElementById("out").value.trim();
+        if(!txt){
+          App.toast("JSON", "Gere o JSON primeiro.");
+          return;
+        }
+        try{
+          await navigator.clipboard.writeText(txt);
+          App.toast("JSON", "Copiado!");
+        }catch{
+          App.toast("JSON", "Não consegui copiar (permissão do navegador).");
+        }
+      });
+
+      function renderPrev(){
+        const prevT = document.getElementById("prevTrans");
+        const prevM = document.getElementById("prevMetas");
+
+        const extr = (working.extrato||[]).slice().sort((a,b)=>String(b.data).localeCompare(String(a.data))).slice(0,6);
+        prevT.innerHTML = extr.map(t=>{
+          const sign = t.tipo === "entrada" ? "+" : "-";
+          return `<tr><td>${t.data}</td><td>${t.titulo}</td><td>${sign} ${App.brl(t.valor)}</td></tr>`;
+        }).join("") || `<tr><td colspan="3" class="muted">Sem transações</td></tr>`;
+
+        const metas = (working.metas||[]).slice().slice(0,8);
+        prevM.innerHTML = metas.map(m=>{
+          return `<tr><td>${m.nome}</td><td>${App.brl(m.atual)}</td><td>${App.brl(m.meta)}</td></tr>`;
+        }).join("") || `<tr><td colspan="3" class="muted">Sem metas</td></tr>`;
+      }
+    });
+  </script>
+</body>
+</html>
