@@ -29,39 +29,35 @@
 
     <div class="card">
       <div class="cardHeader">
-        <div class="hi">
-          <div class="avatar">👤</div>
-          <div>Olá, <span id="userName">Usuário</span></div>
+        <div class="row" style="justify-content:flex-start;gap:10px;">
+          <div class="pill">👤 <span id="userName">Usuário</span></div>
         </div>
         <div class="pill"><span id="timeText"></span></div>
       </div>
 
       <div class="cardBody">
-        <div class="muted">Saldo em conta</div>
+        <div class="muted">Saldo disponível</div>
         <div class="money" id="saldoText">R$ 0,00</div>
 
-        <div class="row" style="margin-top:12px;">
-          <div class="pill" style="border-style:solid;">
-            ✅ Limite: <b id="limiteText" style="margin-left:6px;">R$ 0,00</b>
-          </div>
-          <div class="muted">Tecla <b>P</b> ou botão 👁</div>
+        <div class="row" style="margin-top:10px;">
+          <div class="pill" style="border-style:solid;">✅ Limite: <b id="limiteText">R$ 0,00</b></div>
+          <div class="muted">Tecla <b>P</b> ou 👁</div>
         </div>
 
         <div class="actions">
-          <!-- Pix agora abre a tela de Enviar -->
           <div class="action" onclick="location.href='./pix.html#enviar'">
             <div class="k">Ação</div>
             <div class="v">Pix</div>
           </div>
 
-          <div class="action" data-action="Pagar">
+          <div class="action" onclick="location.href='./extrato.html'">
             <div class="k">Ação</div>
-            <div class="v">Pagar</div>
+            <div class="v">Extrato</div>
           </div>
 
-          <div class="action" data-action="Transferir">
+          <div class="action" onclick="location.href='./metas.html'">
             <div class="k">Ação</div>
-            <div class="v">Transferir</div>
+            <div class="v">Metas</div>
           </div>
 
           <div class="action" onclick="location.href='./cartoes.html'">
@@ -70,14 +66,17 @@
           </div>
         </div>
 
+        <div class="sep"></div>
+
+        <div class="muted">
+          ✅ Agora tudo salva no navegador automaticamente. Use Config para exportar/importar backup.
+        </div>
       </div>
     </div>
 
   </div>
 
   <script src="./js/app.js"></script>
-  <script>
-    App.init("home");
-  </script>
+  <script>App.init("home");</script>
 </body>
 </html>
